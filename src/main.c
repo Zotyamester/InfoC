@@ -4,6 +4,18 @@
 #include <time.h>
 #include <string.h>
 
+int jarda(int n, int k)
+{
+	if (n == 0)
+		return 1;
+
+	int max_csempe = (n >= k) ? k : n;
+	int db = 0;
+	for (int csempe = 1; csempe <= max_csempe; csempe += 1)
+		db += jarda(n - csempe, max_csempe);
+	return db;
+}
+
 //bool benne_van_e(int *tomb, int meret, int elem)
 //{
 //	for (int i = 0; i < meret; i++)
@@ -744,7 +756,8 @@ int main()
 	puts(szoveg);
 	puts(palindrom_e2(szoveg) ? "igen" : "nem");*/
 
-
+	for (int i = 0; i <= 4; i++)
+		printf("jarda(%d)=%d\n", i, jarda(i, 3));
 
 	return 0;
 }

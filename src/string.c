@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
 	char basestr[32] = "alma";
 	strlcat(basestr, " ", 32);
-	strlcat(basestr, "fucking faaaaaaaaaaa... :)", 32);
+	strlcat(basestr, "fcking faaaaaaaaaaa... :)", 32);
 	printf("res: %s\n", basestr);
 
 	return 0;

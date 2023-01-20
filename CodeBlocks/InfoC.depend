@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1668248104 source:d:\documents\infoc\peldatar\src\main2.c
+	<stdio.h>
+	<windows.h>
+

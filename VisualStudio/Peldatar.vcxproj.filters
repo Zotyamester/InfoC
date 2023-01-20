@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\vecnsumd.c">
+    <ClCompile Include="..\src\bsz1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

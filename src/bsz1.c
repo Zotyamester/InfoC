@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /// <summary>
 /// Calculates a ^ b mod m with modular exponentation.
@@ -104,37 +105,212 @@ int solve_linear_congruence(int a, int b, int m, int** p_solution_set)
 	return gcd;
 }
 
+typedef struct Matrix
+{
+	float* data;
+	float** matrix;
+	size_t k, n;
+} Matrix;
+
+bool matrix_init(Matrix* m, size_t k, size_t n)
+{
+	float* data = (float*)malloc(k * n * sizeof(float));
+	if (data == NULL)
+		return false;
+
+	float** matrix = (float**)malloc(k * sizeof(float*));
+	if (matrix == NULL)
+	{
+		free(data);
+		return false;
+	}
+
+	for (size_t i = 0; i < k; i++)
+		matrix[i] = data + i * n;
+
+	m->data = data;
+	m->matrix = matrix;
+	m->k = k;
+	m->n = n;
+
+	return true;
+}
+
+void matrix_free(Matrix* m)
+{
+	free(m->matrix);
+	free(m->data);
+}
+
+bool matrix_read(Matrix* m, FILE* file)
+{
+	size_t k, n;
+	if (fscanf(file, "%llu %llu", &k, &n) != 2)
+		return false;
+
+	if (!matrix_init(m, k, n))
+		return false;
+
+	for (size_t i = 0; i < m->k; i++)
+	{
+		for (size_t j = 0; j < m->n; j++)
+		{
+			if (fscanf(file, "%f", &m->matrix[i][j]) != 1)
+			{
+				matrix_free(m);
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool matrix_write(const Matrix* m, FILE* file)
+{
+	if (fprintf(file, "%llu %llu\n\n", m->k, m->n) < 0)
+		return false;
+
+	for (size_t i = 0; i < m->k; i++)
+	{
+		for (size_t j = 0; j < m->n; j++)
+			if (fprintf(file, "%.1f ", m->matrix[i][j]) < 0)
+				return false;
+		if (fputc('\n', file) == EOF)
+			return false;
+	}
+
+	return true;
+}
+
+bool matrix_multiply(const Matrix* a, const Matrix* b, Matrix* c)
+{
+	size_t k = a->k, n = a->n, m = b->n;
+
+	if (a->n != b->k || !matrix_init(c, a->k, b->n))
+		return false;
+
+	for (size_t i = 0; i < k; i++)
+	{
+		for (size_t j = 0; j < m; j++)
+		{
+			float cell_value = 0;
+			for (size_t idx = 0; idx < n; idx++)
+				cell_value += a->matrix[i][idx] * b->matrix[idx][j];
+			c->matrix[i][j] = cell_value;
+		}
+	}
+
+	return true;
+}
+
+bool matrix_gauss(Matrix* m)
+{
+	if (m->k != m->n)
+		return false;
+
+	int i = 0, j = 0;
+	while (i < m->k)
+	{
+		if (m->matrix[i][j] == 0)
+		{
+			int new_i = i + 1;
+			while (new_i < m->k && m->matrix[new_i][j] == 0)
+				new_i++;
+			if (new_i == m->k)
+			{
+				if (j == m->n - 1)
+				{
+					break;
+				}
+				else
+				{
+					j++;
+					continue;
+				}
+			}
+
+			for (int col_idx = 0; col_idx < m->n; col_idx++)
+			{
+				float tmp = (float)m->matrix[i][j];
+				m->matrix[i][col_idx] = m->matrix[new_i][col_idx];
+				m->matrix[new_i][col_idx] = tmp;
+			}
+		}
+
+		float divisor = (float)m->matrix[i][j];
+		for (int col_idx = j; col_idx < m->n; col_idx++)
+			m->matrix[i][col_idx] /= divisor;
+
+		for (int row_idx = i + 1; row_idx < m->k; row_idx++)
+		{
+			float lambda = (float)m->matrix[row_idx][j];
+			for (int col_idx = j; col_idx < m->n; col_idx++)
+				m->matrix[row_idx][col_idx] -= lambda * m->matrix[i][col_idx];
+		}
+
+		i++;
+		j++;
+	}
+
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
-	int a, b, m;
-	scanf("%d %d %d", &a, &b, &m);
+	//int a, b, m;
+	//scanf("%d %d %d", &a, &b, &m);
 
-	//printf("a^b mod m = %d\n", modular_exponentation(a, b, m));
+	////printf("a^b mod m = %d\n", modular_exponentation(a, b, m));
 
-	printf("%dx === %d (mod %d)\n", a, b, m);
+	//printf("%dx === %d (mod %d)\n", a, b, m);
 
-	int* solution_set = NULL;
-	int size = solve_linear_congruence(a, b, m, &solution_set);
-	if (size < 0)
-	{
-		perror("Not enough memory: ");
-		return 1;
-	}
-	else if (size == 0)
-	{
-		printf("No solutions to this congruence.\n");
-	}
-	else
-	{
-		printf("Solutions (mod m):");
-		for (int i = 0; i < size; i++)
-		{
-			printf(" %d", solution_set[i]);
-		}
-		printf("\n");
-		free(solution_set);
-		solution_set = NULL;
-	}
+	//int* solution_set = NULL;
+	//int size = solve_linear_congruence(a, b, m, &solution_set);
+	//if (size < 0)
+	//{
+	//	perror("Not enough memory: ");
+	//	return 1;
+	//}
+	//else if (size == 0)
+	//{
+	//	printf("No solutions to this congruence.\n");
+	//}
+	//else
+	//{
+	//	printf("Solutions (mod m):");
+	//	for (int i = 0; i < size; i++)
+	//	{
+	//		printf(" %d", solution_set[i]);
+	//	}
+	//	printf("\n");
+	//	free(solution_set);
+	//	solution_set = NULL;
+	//}
+
+	/*Matrix a, b, c;
+
+	matrix_read(&a, stdin);
+	matrix_read(&b, stdin);
+
+	matrix_multiply(&a, &b, &c);
+
+	matrix_write(&c, stdout);
+
+	matrix_free(&c);
+
+	matrix_free(&b);
+	matrix_free(&a);*/
+
+	Matrix m;
+
+	matrix_read(&m, stdin);
+
+	matrix_gauss(&m);
+
+	matrix_write(&m, stdout);
+
+	matrix_free(&m);
 
 	return 0;
 }
