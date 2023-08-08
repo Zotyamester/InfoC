@@ -129,15 +129,6 @@ int int_cmp(const void* pa, const void* pb)
 	return *pia > *pib;
 }
 
-void torol(BiFa* gyoker)
-{
-	if (gyoker == NULL)
-		return;
-	torol(gyoker->bal);
-	torol(gyoker->jobb);
-	free(gyoker);
-}
-
 int elemek_szama(BiFa* gyoker)
 {
 	if (gyoker == NULL)
@@ -200,7 +191,7 @@ void tukrozes(BiFa* gyoker)
 bool keresofa_e(BiFa* gyoker)
 {
 	return  (gyoker == NULL) ||
-		(gyoker->bal == NULL || gyoker->bal->ertek < gyoker->ertek&& keresofa_e(gyoker->bal)) &&
+		(gyoker->bal == NULL || gyoker->bal->ertek < gyoker->ertek && keresofa_e(gyoker->bal)) &&
 		(gyoker->jobb == NULL || gyoker->jobb->ertek > gyoker->ertek && keresofa_e(gyoker->jobb));
 }
 
